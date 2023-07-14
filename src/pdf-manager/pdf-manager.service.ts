@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { mkdirSync } from 'fs';
-import { resolve } from 'path';
+import { readdir, rename } from 'fs/promises';
+import { join, resolve } from 'path';
 
 @Injectable()
 export class PdfManagerService {
@@ -15,16 +16,23 @@ export class PdfManagerService {
     mkdirSync(this.outputPath, { recursive: true });
   }
 
-  moveOutput() {
+  async finishScan() {
+    const files = await readdir(this.inputPath);
+    await Promise.all(
+      files.map((file) => {
+        const oldFile = join(this.inputPath, file);
+        const newFile = join(this.outputPath, file);
+        return rename(oldFile, newFile);
+      }),
+    );
+  }
+  async concatenateFiles() {
     throw new Error('Method not implemented.');
   }
-  concatenateFiles() {
+  async mergeDuplex() {
     throw new Error('Method not implemented.');
   }
-  mergeDuplex() {
-    throw new Error('Method not implemented.');
-  }
-  clearFiles() {
+  async clearFiles() {
     throw new Error('Method not implemented.');
   }
 }

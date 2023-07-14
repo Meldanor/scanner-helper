@@ -5,9 +5,9 @@ import { PdfManagerService } from './pdf-manager.service';
 export class PdfManagerController {
   constructor(private service: PdfManagerService) {}
 
-  @Post('move-output')
-  async moveOutput() {
-    await this.service.moveOutput();
+  @Post('finish-scan')
+  async finishScan() {
+    await this.service.finishScan();
   }
 
   @Post('concatenate-files')
