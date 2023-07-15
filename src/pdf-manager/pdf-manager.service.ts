@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { mkdirSync } from 'fs';
-import { readdir, rename } from 'fs/promises';
+import { readdir, rename, rm } from 'fs/promises';
 import { join, resolve } from 'path';
+import PDFMerger = require('pdf-merger-js');
 
 @Injectable()
 export class PdfManagerService {
@@ -26,13 +27,34 @@ export class PdfManagerService {
       }),
     );
   }
+
   async concatenateFiles() {
-    throw new Error('Method not implemented.');
+    const merger = new PDFMerger();
+
+    const inputFiles = await readdir(this.inputPath);
+    if (inputFiles.length === 0) {
+      console.warn('No files in input dir to concatenate');
+      return;
+    }
+    await Promise.all(
+      inputFiles.map(async (file) => {
+        await merger.add(join(this.inputPath, file));
+      }),
+    );
+
+    // Serialize the PDFDocument to bytes (a Uint8Array)
+    await merger.save(join(this.outputPath, inputFiles[0]));
+    await this.clearFiles();
   }
   async mergeDuplex() {
     throw new Error('Method not implemented.');
   }
   async clearFiles() {
-    throw new Error('Method not implemented.');
+    const files = await readdir(this.inputPath);
+    await Promise.all(
+      files.map((file) => {
+        return rm(join(this.inputPath, file));
+      }),
+    );
   }
 }
